@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealFit - Votre partenaire santé et fitness</title>
+
+    <!-- Fichier CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/styles/home.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="{{ path('app_home') }}" class="logo">
+                    <img src="{{ asset('images/healFit-logo.png') }}" alt="HealFit Logo" class="logo-img">
+                </a>
+
+                <div class="nav-links">
+                    <div class="topics-container">
+                        <button class="topics-btn">
+                            <i class="fas fa-heartbeat"></i> Health Topics
+                        </button>
+                        <div class="topics-scroll">
+                            <div class="topics-list">
+                                <div class="topic-item">Nutrition équilibrée</div>
+                                <div class="topic-item">Cardio-training</div>
+                                <div class="topic-item">Musculation</div>
+                                <div class="topic-item">Yoga et méditation</div>
+                                <div class="topic-item">Perte de poids</div>
+                                <div class="topic-item">Gain musculaire</div>
+                                <div class="topic-item">Santé mentale</div>
+                                <div class="topic-item">Récupération active</div>
+                                <div class="topic-item">Aliments superfoods</div>
+                                <div class="topic-item">Exercices à domicile</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="auth-buttons">
+                        <button class="btn btn-login">Se connecter</button>
+                        <button class="btn btn-signup">S'inscrire</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Transformez votre santé, améliorez votre vie</h1>
+                <p>Rejoignez la communauté HealFit et découvrez des programmes personnalisés, des recettes saines et un accompagnement expert pour atteindre vos objectifs santé et fitness.</p>
+                <button class="btn-hero">Commencer mon parcours</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Témoignages de nos membres</h2>
+            <div class="testimonials-container">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "HealFit a changé ma vie ! J'ai perdu 15 kg en 6 mois grâce aux programmes adaptés et aux conseils nutritionnels. Je me sens plus énergique que jamais."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div class="author-info">
+                            <h4>Marie L.</h4>
+                            <p>Membre depuis 2 ans</p>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "En tant que débutant, je cherchais des conseils fiables. HealFit m'a offert un parcours progressif qui m'a permis de prendre confiance et d'adopter un mode de vie sain."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">P</div>
+                        <div class="author-info">
+                            <h4>Pierre D.</h4>
+                            <p>Membre depuis 1 an</p>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        "Les recettes proposées sont délicieuses et faciles à préparer. J'ai enfin réussi à manger sainement sans me priver. Une vraie révélation culinaire !"
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S</div>
+                        <div class="author-info">
+                            <h4>Sophie T.</h4>
+                            <p>Membre depuis 8 mois</p>
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BMI Calculator Section -->
+    <section class="bmi-calculator">
+        <div class="container">
+            <h2 class="section-title">Calculateur d'IMC</h2>
+            <div class="calculator-container">
+                <div class="calculator-form">
+                    <h3>Calculez votre Indice de Masse Corporelle</h3>
+                    <p>L'IMC est un indicateur de corpulence qui permet d'estimer la répartition de la masse corporelle.</p>
+
+                    <div class="form-group">
+                        <label for="height">Taille (cm)</label>
+                        <input type="number" id="height" placeholder="Ex: 175" min="100" max="250" value="175">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Poids (kg)</label>
+                        <input type="number" id="weight" placeholder="Ex: 70" min="30" max="200" value="70">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Âge</label>
+                        <input type="number" id="age" placeholder="Ex: 30" min="15" max="100" value="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Genre</label>
+                        <select id="gender">
+                            <option value="male">Homme</option>
+                            <option value="female">Femme</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-signup" id="calculateBtn">Calculer mon IMC</button>
+                </div>
+
+                <div class="bmi-result">
+                    <h3>Votre résultat</h3>
+                    <div class="bmi-value" id="bmiValue">--</div>
+                    <div class="bmi-category" id="bmiCategory">--</div>
+                    <p class="bmi-info" id="bmiInfo">Entrez vos données pour obtenir votre IMC et des conseils personnalisés.</p>
+
+                    <div style="margin-top: 30px;">
+                        <h4>Catégories d'IMC</h4>
+                        <p style="margin-top: 15px; font-size: 0.9rem;">
+                            <span style="color: #4caf50;">●</span> Maigreur : moins de 18.5<br>
+                            <span style="color: #8bc34a;">●</span> Normal : 18.5 à 24.9<br>
+                            <span style="color: #ff9800;">●</span> Surpoids : 25 à 29.9<br>
+                            <span style="color: #f44336;">●</span> Obésité : 30 et plus
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recipes Section -->
+    <section class="recipes">
+        <div class="container">
+            <h2 class="section-title">Recettes santé populaires</h2>
+            <div class="recipes-container">
+                <div class="recipe-card">
+                    <div class="recipe-img">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-title">Bol Buddha protéiné</h3>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-clock"></i> 20 min</span>
+                            <span><i class="fas fa-fire"></i> 350 kcal</span>
+                        </div>
+                        <p>Un bol équilibré riche en protéines végétales, parfait pour la récupération musculaire.</p>
+                        <button class="recipe-btn" style="margin-top: 15px;">Voir la recette</button>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <div class="recipe-img">
+                        <i class="fas fa-blender"></i>
+                    </div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-title">Smoothie énergétique vert</h3>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-clock"></i> 10 min</span>
+                            <span><i class="fas fa-fire"></i> 280 kcal</span>
+                        </div>
+                        <p>Un smoothie riche en vitamines et antioxydants pour faire le plein d'énergie.</p>
+                        <button class="recipe-btn" style="margin-top: 15px;">Voir la recette</button>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <div class="recipe-img">
+                        <i class="fas fa-drumstick-bite"></i>
+                    </div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-title">Poulet aux légumes rôtis</h3>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-clock"></i> 35 min</span>
+                            <span><i class="fas fa-fire"></i> 420 kcal</span>
+                        </div>
+                        <p>Un plat savoureux et riche en protéines maigres, idéal pour le dîner.</p>
+                        <button class="recipe-btn" style="margin-top: 15px;">Voir la recette</button>
+                    </div>
+                </div>
+
+                <div class="recipe-card">
+                    <div class="recipe-img">
+                        <i class="fas fa-cookie-bite"></i>
+                    </div>
+                    <div class="recipe-content">
+                        <h3 class="recipe-title">Barres énergétiques maison</h3>
+                        <div class="recipe-meta">
+                            <span><i class="fas fa-clock"></i> 25 min</span>
+                            <span><i class="fas fa-fire"></i> 210 kcal</span>
+                        </div>
+                        <p>Des encas sains sans sucre ajouté, parfaits avant ou après l'entraînement.</p>
+                        <button class="recipe-btn" style="margin-top: 15px;">Voir la recette</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Owners Section -->
+    <section class="owners">
+        <div class="container">
+            <h2 class="section-title">Notre équipe fondatrice</h2>
+            <div class="owners-container">
+                <div class="owner-card">
+                    <div class="owner-avatar">L</div>
+                    <h3 class="owner-name">Lucie Martin</h3>
+                    <div class="owner-role">Nutritionniste diplômée</div>
+                    <p class="owner-desc">Spécialiste en nutrition sportive avec plus de 10 ans d'expérience, Lucie conçoit tous nos programmes alimentaires.</p>
+                </div>
+
+                <div class="owner-card">
+                    <div class="owner-avatar">M</div>
+                    <h3 class="owner-name">Marc Dubois</h3>
+                    <div class="owner-role">Coach sportif certifié</div>
+                    <p class="owner-desc">Ancien athlète de haut niveau, Marc supervise la création des programmes d'entraînement personnalisés.</p>
+                </div>
+
+                <div class="owner-card">
+                    <div class="owner-avatar">S</div>
+                    <h3 class="owner-name">Sophie Lambert</h3>
+                    <div class="owner-role">Experte en bien-être</div>
+                    <p class="owner-desc">Sophie intègre les aspects de santé mentale et de bien-être global dans notre approche holistique.</p>
+                </div>
+
+                <div class="owner-card">
+                    <div class="owner-avatar">A</div>
+                    <h3 class="owner-name">Antoine Girard</h3>
+                    <div class="owner-role">Kinésithérapeute</div>
+                    <p class="owner-desc">Antoine assure la sécurité et l'efficacité de tous nos exercices, avec un focus sur la prévention des blessures.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programs Section -->
+    <section class="programs">
+        <div class="container">
+            <h2 class="section-title">Nos programmes spécialisés</h2>
+            <div class="programs-container">
+                <div class="program-card">
+                    <div class="program-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <h3 class="program-title">Perte de poids</h3>
+                    <p>Programme combinant cardio, musculation et alimentation adaptée pour une perte de poids durable.</p>
+                </div>
+
+                <div class="program-card">
+                    <div class="program-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <h3 class="program-title">Prise de masse</h3>
+                    <p>Plan d'entraînement et nutritionnel pour développer sa masse musculaire de manière efficace et saine.</p>
+                </div>
+
+                <div class="program-card">
+                    <div class="program-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="program-title">Santé cardiaque</h3>
+                    <p>Programme axé sur l'amélioration de la santé cardiovasculaire et l'endurance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-container">
+                <h2 class="section-title" style="color: white;">Restez informé</h2>
+                <p>Inscrivez-vous à notre newsletter pour recevoir des conseils exclusifs, des recettes et des offres spéciales.</p>
+
+                <form class="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="Votre adresse email" required>
+                    <button type="submit" class="newsletter-btn">S'abonner</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <div class="footer-logo">
+                        <span>HEAL</span><span>FIT</span>
+                    </div>
+                    <p class="footer-about">
+                        HealFit est votre partenaire santé et fitness. Nous vous accompagnons dans l'atteinte de vos objectifs grâce à des programmes personnalisés, des conseils d'experts et une communauté bienveillante.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Liens rapides</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Accueil</a></li>
+                        <li><a href="#">Programmes</a></li>
+                        <li><a href="#">Recettes</a></li>
+                        <li><a href="#">Calculatrice IMC</a></li>
+                        <li><a href="#">À propos</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Ressources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog santé</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Téléchargements</a></li>
+                        <li><a href="#">Plan du site</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Rue du Fitness, Paris</li>
+                        <li><i class="fas fa-phone"></i> +33 1 23 45 67 89</li>
+                        <li><i class="fas fa-envelope"></i> contact@healfit.com</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>&copy; 2023 HealFit Wellness Studio. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ asset('assets/js/script.js') }}"></script>
+</body>
+</html>
