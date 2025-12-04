@@ -7,6 +7,7 @@
 
     <!-- Fichier CSS -->
     <link rel="stylesheet" href="{{ asset('assets/styles/home.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/styles/login_modal.css') }}">
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -43,8 +44,8 @@
 
                     <div class="auth-buttons">
                         <!-- MODIFICATION : Boutons transformés en liens -->
-                        <a href="{{ path('app_login') }}" class="btn btn-login">Se connecter</a>
-                        <a href="{{ path('app_login') }}?tab=register" class="btn btn-signup">S'inscrire</a>
+                        <a id="openLoginBtn" class="btn btn-login">Se connecter</a>
+                        <a  id="openRegisterBtn" class="btn btn-signup">S'inscrire</a>
                     </div>
                 </div>
             </nav>
@@ -57,8 +58,9 @@
             <div class="hero-content">
                 <h1>Transformez votre santé, améliorez votre vie</h1>
                 <p>Rejoignez la communauté HealFit et découvrez des programmes personnalisés, des recettes saines et un accompagnement expert pour atteindre vos objectifs santé et fitness.</p>
-                <!-- MODIFICATION : Bouton transformé en lien -->
-                <a href="{{ path('app_login') }}" class="btn-hero">Commencer mon parcours</a>
+               <button class="btn-hero" id="openHeroRegisterBtn">
+                 Commencer mon parcours
+                </button>
             </div>
         </div>
     </section>
@@ -390,8 +392,8 @@
                 <div class="footer-col">
                     <h3 class="footer-title">Contact</h3>
                     <ul class="footer-links">
-                        <li><i class="fas fa-map-marker-alt"></i> 123 Rue du Fitness, Paris</li>
-                        <li><i class="fas fa-phone"></i> +33 1 23 45 67 89</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Rue du Fitness, Tunisie</li>
+                        <li><i class="fas fa-phone"></i> +216 1 23 45 67 89</li>
                         <li><i class="fas fa-envelope"></i> contact@healfit.com</li>
                     </ul>
                 </div>
@@ -402,7 +404,9 @@
             </div>
         </div>
     </footer>
-
+      {% include 'login/login.html.twig' %}
+    <!-- Fichier JS -->
+    <script src="{{ asset('js/login.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealFit Dashboard</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/styles/dashboard.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Navbar -->
+        <nav class="dashboard-navbar">
+            <div class="navbar-left">
+                <a href="{{ path('app_home') }}" class="dashboard-logo">
+                    <img src="{{ asset('images/healFit-logo.png') }}" alt="HealFit Logo" class="logo-img">
+                    <span class="logo-text">
+                        <span class="logo-part1">HEAL</span>
+                        <span class="logo-part2">FIT</span>
+                    </span>
+                </a>
+            </div>
+
+            <div class="navbar-center">
+                <h1 class="dashboard-title">Tableau de Bord</h1>
+            </div>
+
+            <div class="navbar-right">
+                <!-- Notification -->
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+
+                <!-- Messagerie -->
+                <div class="messaging-icon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge">5</span>
+                </div>
+
+                <!-- Profil Utilisateur -->
+                <div class="user-profile-dropdown">
+                    <div class="user-avatar" id="userMenuTrigger">
+                        <img src="{{ asset('images/default-avatar.jpg') }}" alt="Photo de profil" class="profile-img">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+
+                    <div class="dropdown-menu" id="userMenu">
+                        <div class="user-info">
+                            <img src="{{ asset('images/default-avatar.jpg') }}" alt="Photo de profil" class="menu-profile-img">
+                            <div class="user-details">
+                                <h4>John Doe</h4>
+                                <p>Membre Premium</p>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Mon Profil</span>
+                        </a>
+
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Paramètres</span>
+                        </a>
+
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Mes Statistiques</span>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <a href="#" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Déconnexion</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-bars"></i> Menu</h3>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+
+                <div class="menu-section">
+                    <h4>Santé & Fitness</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-utensils"></i>
+                        <span>Régime alimentaire</span>
+                        <span class="badge">Nouveau</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-dumbbell"></i>
+                        <span>Workout personnalisé</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Planning d'entraînement</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Salle de sport proche</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Expertise</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-user-md"></i>
+                        <span>Nutritionniste expert</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-users"></i>
+                        <span>Communauté</span>
+                        <span class="badge">24</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-building"></i>
+                        <span>Partenaires fitness</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Progression</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Mes progrès</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-trophy"></i>
+                        <span>Mes objectifs</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-award"></i>
+                        <span>Mes badges</span>
+                        <span class="badge">8</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Ressources</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-book"></i>
+                        <span>Guide santé</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-video"></i>
+                        <span>Vidéos d'exercices</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Rapports mensuels</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-progress">
+                    <div class="progress-info">
+                        <span>Progression mensuelle</span>
+                        <span>65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                </div>
+
+                <button class="premium-btn">
+                    <i class="fas fa-crown"></i>
+                    Passer à Premium
+                </button>
+            </div>
+        </aside>
+
+        <!-- Contenu principal -->
+        <main class="dashboard-content">
+            <!-- Cartes de bienvenue et stats rapides -->
+            <div class="welcome-section">
+                <div class="welcome-card">
+                    <h2>Bonjour, <span class="user-name">John</span> 👋</h2>
+                    <p>Vous avez complété 8 entraînements cette semaine. Continuez comme ça !</p>
+                    <div class="welcome-stats">
+                        <div class="stat">
+                            <i class="fas fa-fire"></i>
+                            <div>
+                                <h4>1,250</h4>
+                                <span>Calories brûlées</span>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-running"></i>
+                            <div>
+                                <h4>28km</h4>
+                                <span>Distance parcourue</span>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-heartbeat"></i>
+                            <div>
+                                <h4>72</h4>
+                                <span>BPM moyenne</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="date-card">
+                    <h3><i class="fas fa-calendar-day"></i> Aujourd'hui</h3>
+                    <div class="current-date">
+                        <div class="date-day">15</div>
+                        <div class="date-month">Octobre 2024</div>
+                    </div>
+                    <div class="next-workout">
+                        <p>Prochain entraînement: <strong>Cardio (18:00)</strong></p>
+                        <button class="btn-start">Commencer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques et statistiques -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Progression hebdomadaire</h3>
+                        <select class="chart-select">
+                            <option>Cette semaine</option>
+                            <option>Ce mois</option>
+                            <option>Cette année</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Répartition des calories</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item"><i class="fas fa-circle" style="color: #4CAF50;"></i> Protéines</span>
+                            <span class="legend-item"><i class="fas fa-circle" style="color: #2196F3;"></i> Glucides</span>
+                            <span class="legend-item"><i class="fas fa-circle" style="color: #FF9800;"></i> Lipides</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="caloriesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entraînements et régime -->
+            <div class="workout-diet-section">
+                <div class="workout-plan">
+                    <div class="section-header">
+                        <h3><i class="fas fa-dumbbell"></i> Entraînement du jour</h3>
+                        <a href="#" class="view-all">Voir le planning complet <i class="fas fa-arrow-right"></i></a>
+                    </div>
+
+                    <div class="workout-list">
+                        <div class="workout-item">
+                            <div class="workout-icon">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <div class="workout-details">
+                                <h4>Cardio Training</h4>
+                                <p>30 min • Brûle 300 calories</p>
+                            </div>
+                            <div class="workout-status completed">
+                                <i class="fas fa-check"></i>
+                                Terminé
+                            </div>
+                        </div>
+
+                        <div class="workout-item">
+                            <div class="workout-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="workout-details">
+                                <h4>Musculation</h4>
+                                <p>45 min • Haut du corps</p>
+                            </div>
+                            <div class="workout-status pending">
+                                <i class="fas fa-clock"></i>
+                                18:00
+                            </div>
+                        </div>
+
+                        <div class="workout-item">
+                            <div class="workout-icon">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <div class="workout-details">
+                                <h4>Natation</h4>
+                                <p>40 min • Endurance</p>
+                            </div>
+                            <div class="workout-status upcoming">
+                                <i class="fas fa-calendar"></i>
+                                Demain
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diet-plan">
+                    <div class="section-header">
+                        <h3><i class="fas fa-utensils"></i> Repas recommandés</h3>
+                        <a href="#" class="view-all">Voir le menu complet <i class="fas fa-arrow-right"></i></a>
+                    </div>
+
+                    <div class="meal-list">
+                        <div class="meal-item">
+                            <div class="meal-time">Petit-déjeuner</div>
+                            <div class="meal-details">
+                                <h4>Smoothie protéiné</h4>
+                                <p>350 kcal • 25g protéines</p>
+                            </div>
+                            <div class="meal-check">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="meal-item">
+                            <div class="meal-time">Déjeuner</div>
+                            <div class="meal-details">
+                                <h4>Poulet et quinoa</h4>
+                                <p>450 kcal • 35g protéines</p>
+                            </div>
+                            <div class="meal-check">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="meal-item">
+                            <div class="meal-time">Dîner</div>
+                            <div class="meal-details">
+                                <h4>Saumon et légumes</h4>
+                                <p>400 kcal • 30g protéines</p>
+                            </div>
+                            <div class="meal-check">
+                                <i class="far fa-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="meal-item">
+                            <div class="meal-time">Collation</div>
+                            <div class="meal-details">
+                                <h4>Yaourt grec</h4>
+                                <p>150 kcal • 15g protéines</p>
+                            </div>
+                            <div class="meal-check">
+                                <i class="far fa-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salle de sport et communauté -->
+            <div class="gym-community-section">
+                <div class="gym-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-map-marker-alt"></i> Salles de sport proches</h3>
+                        <button class="btn-refresh"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+
+                    <div class="gym-list">
+                        <div class="gym-item">
+                            <div class="gym-info">
+                                <h4>Fitness First</h4>
+                                <p><i class="fas fa-map-marker"></i> 1.2 km • Ouvert 24h/24</p>
+                                <div class="gym-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                    <span>4.5 (128 avis)</span>
+                                </div>
+                            </div>
+                            <button class="btn-direction">
+                                <i class="fas fa-directions"></i> Itinéraire
+                            </button>
+                        </div>
+
+                        <div class="gym-item">
+                            <div class="gym-info">
+                                <h4>Urban Fit Club</h4>
+                                <p><i class="fas fa-map-marker"></i> 2.5 km • Piscine incluse</p>
+                                <div class="gym-rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <span>4.0 (89 avis)</span>
+                                </div>
+                            </div>
+                            <button class="btn-direction">
+                                <i class="fas fa-directions"></i> Itinéraire
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="community-card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-users"></i> Communauté active</h3>
+                        <a href="#" class="view-all">Voir tous <i class="fas fa-arrow-right"></i></a>
+                    </div>
+
+                    <div class="community-members">
+                        <div class="member">
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Membre">
+                            <div class="member-info">
+                                <h5>Marie L.</h5>
+                                <p>15 entraînements cette semaine</p>
+                            </div>
+                            <button class="btn-follow">Suivre</button>
+                        </div>
+
+                        <div class="member">
+                            <img src="https://randomuser.me/api/portraits/men/54.jpg" alt="Membre">
+                            <div class="member-info">
+                                <h5>Pierre D.</h5>
+                                <p>Perdu 5kg ce mois-ci</p>
+                            </div>
+                            <button class="btn-follow">Suivre</button>
+                        </div>
+
+                        <div class="member">
+                            <img src="https://randomuser.me/api/portraits/women/67.jpg" alt="Membre">
+                            <div class="member-info">
+                                <h5>Sophie T.</h5>
+                                <p>Partage 3 nouvelles recettes</p>
+                            </div>
+                            <button class="btn-following">
+                                <i class="fas fa-check"></i> Suivi
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="community-challenge">
+                        <h4>Défi du mois: 100km en course</h4>
+                        <div class="challenge-progress">
+                            <div class="progress-info">
+                                <span>Votre progression: 42km</span>
+                                <span>42%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 42%"></div>
+                            </div>
+                        </div>
+                        <button class="btn-challenge">Participer</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Chatbot -->
+        <div class="chatbot-widget" id="chatbotWidget">
+            <div class="chatbot-header">
+                <div class="chatbot-title">
+                    <i class="fas fa-robot"></i>
+                    <span>Assistant HealFit</span>
+                </div>
+                <button class="chatbot-close" id="closeChatbot">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot">
+                    <div class="message-content">
+                        Bonjour ! Je suis votre assistant HealFit. Comment puis-je vous aider aujourd'hui ?
+                    </div>
+                    <div class="message-time">Maintenant</div>
+                </div>
+            </div>
+
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Posez-moi une question...">
+                <button id="sendMessage">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bouton d'ouverture du chatbot -->
+        <button class="chatbot-toggle" id="openChatbot">
+            <i class="fas fa-robot"></i>
+        </button>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+</body>
+</html>
