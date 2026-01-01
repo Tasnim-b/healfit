@@ -4,10 +4,11 @@
 namespace App\Controller;
 
 use App\Entity\Message;
+use App\Entity\Conversation;
 use App\Entity\User;
-use App\Form\MessageType;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Repository\ConversationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class MessagerieController extends AbstractController
 {
@@ -22,71 +24,78 @@ class MessagerieController extends AbstractController
     public function index(
         #[CurrentUser] User $currentUser,
         UserRepository $userRepository,
-        MessageRepository $messageRepository
+        ConversationRepository $conversationRepository
     ): Response {
-        // Récupérer tous les utilisateurs (sauf l'utilisateur connecté)
-        $users = $userRepository->findAllExcept($currentUser);
+        // Récupérer toutes les conversations de l'utilisateur
+        $conversations = $conversationRepository->findConversationsForUser($currentUser);
 
-        // Récupérer les conversations (utilisateurs avec qui j'ai échangé)
-        $conversations = $userRepository->findUsersWithConversations($currentUser);
+        // Récupérer tous les utilisateurs (sauf l'actuel) pour la liste de contacts
+        $users = $userRepository->findAllExcept($currentUser->getId());
 
-
-        // Compter les messages non lus
-        $unreadCount = $messageRepository->countUnreadMessages($currentUser);
+        // Calculer le total des messages non lus
+        $totalUnread = 0;
+        foreach ($conversations as $conversation) {
+            $totalUnread += $conversation->getUnreadCountForUser($currentUser);
+        }
 
         return $this->render('messagerie/messagerie.html.twig', [
             'currentUser' => $currentUser,
-            'users' => $users,
             'conversations' => $conversations,
-            'unreadCount' => $unreadCount,
+            'users' => $users,
+            'unreadCount' => $totalUnread,
         ]);
     }
 
-    #[Route('/messagerie/conversation/{id}', name: 'app_messagerie_conversation')]
-    public function conversation(
-        User $correspondant,
-        #[CurrentUser] User $currentUser,
-        MessageRepository $messageRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        // Récupérer les messages entre les deux utilisateurs
-        $messages = $messageRepository->findMessagesBetweenUsers($currentUser, $correspondant);
-
-        // Marquer les messages comme lus
-        $messageRepository->markAsRead($currentUser, $correspondant);
-
-        // Créer le formulaire d'envoi de message
-        $message = new Message();
-        $message->setSender($currentUser);
-        $message->setReceiver($correspondant);
-
-        $form = $this->createForm(MessageType::class, $message);
-
-        return $this->render('messagerie/conversation.html.twig', [
-            'currentUser' => $currentUser,
-            'correspondant' => $correspondant,
-            'messages' => $messages,
-            'form' => $form->createView(),
-        ]);
-    }
-
-    #[Route('/messagerie/send/{id}', name: 'app_messagerie_send', methods: ['POST'])]
+    #[Route('/messagerie/send/{userId}', name: 'app_messagerie_send', methods: ['POST'])]
     public function sendMessage(
-        User $receiver,
         Request $request,
-        #[CurrentUser] User $sender,
+        int $userId,
+        #[CurrentUser] User $currentUser,
+        UserRepository $userRepository,
+        ConversationRepository $conversationRepository,
         EntityManagerInterface $entityManager
     ): JsonResponse {
+            // Log pour debugging
+    error_log("Tentative d'envoi de message à l'utilisateur: " . $userId);
+    error_log("Utilisateur courant: " . $currentUser->getId());
         $content = $request->request->get('content');
 
         if (empty(trim($content))) {
+                    error_log("Message vide");
             return $this->json(['success' => false, 'message' => 'Le message ne peut pas être vide']);
         }
 
+        $receiver = $userRepository->find($userId);
+        if (!$receiver) {
+                    error_log("Destinataire introuvable: " . $userId);
+            return $this->json(['success' => false, 'message' => 'Destinataire introuvable']);
+        }
+
+        // Chercher ou créer une conversation
+        $conversation = $conversationRepository->findConversationBetweenUsers($currentUser, $receiver);
+
+        if (!$conversation) {
+            $conversation = new Conversation();
+            $conversation->setUser1($currentUser);
+            $conversation->setUser2($receiver);
+            $conversation->setCreatedAt(new \DateTimeImmutable());
+            $conversation->setUpdatedAt(new \DateTimeImmutable());
+
+            $entityManager->persist($conversation);
+        }
+
+        // Créer le message
         $message = new Message();
-        $message->setSender($sender);
-        $message->setReceiver($receiver);
         $message->setContent(trim($content));
+        $message->setSender($currentUser);
+        $message->setReceiver($receiver);
+        $message->setConversation($conversation);
+        $message->setCreatedAt(new \DateTimeImmutable());
+
+        // Incrémenter le compteur de messages non lus pour le destinataire
+        $conversation->incrementUnreadCount($receiver);
+        $conversation->setLastMessageAt(new \DateTimeImmutable());
+        $conversation->setUpdatedAt(new \DateTimeImmutable());
 
         $entityManager->persist($message);
         $entityManager->flush();
@@ -96,33 +105,84 @@ class MessagerieController extends AbstractController
             'message' => [
                 'id' => $message->getId(),
                 'content' => $message->getContent(),
-                'sender' => $sender->getFullName(),
-                'senderId' => $sender->getId(),
+                'senderId' => $message->getSender()->getId(),
+                'receiverId' => $message->getReceiver()->getId(),
                 'createdAt' => $message->getFormattedCreatedAt(),
                 'date' => $message->getFormattedDate(),
             ]
         ]);
     }
 
-    #[Route('/messagerie/check-new/{correspondantId}', name: 'app_messagerie_check_new')]
-    public function checkNewMessages(
-        int $correspondantId,
+    #[Route('/messagerie/conversation/{conversationId}', name: 'app_messagerie_conversation')]
+    public function getConversation(
+        int $conversationId,
         #[CurrentUser] User $currentUser,
-        UserRepository $userRepository,
-        MessageRepository $messageRepository,
+        ConversationRepository $conversationRepository,
         EntityManagerInterface $entityManager
-    ): JsonResponse {
-        $correspondant = $userRepository->find($correspondantId);
+    ): Response {
+        $conversation = $conversationRepository->find($conversationId);
 
-        if (!$correspondant) {
-            return $this->json(['success' => false]);
+        if (!$conversation) {
+            throw $this->createNotFoundException('Conversation non trouvée');
         }
 
-        $newMessages = $messageRepository->findUnreadMessages($currentUser, $correspondant);
+        // Vérifier que l'utilisateur fait partie de la conversation
+        if ($conversation->getUser1()->getId() !== $currentUser->getId() &&
+            $conversation->getUser2()->getId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('Accès non autorisé');
+        }
 
-        $messages = [];
+        // Marquer les messages comme lus
+        foreach ($conversation->getMessages() as $message) {
+            if ($message->getReceiver()->getId() === $currentUser->getId() && !$message->isIsRead()) {
+                $message->setIsRead(true);
+                $message->setReadAt(new \DateTimeImmutable());
+            }
+        }
+
+        // Réinitialiser le compteur de messages non lus
+        $conversation->resetUnreadCount($currentUser);
+
+        $entityManager->flush();
+
+        return $this->render('messagerie/_conversation.html.twig', [
+            'currentUser' => $currentUser,
+            'conversation' => $conversation,
+            'otherUser' => $conversation->getOtherUser($currentUser),
+            'messages' => $conversation->getMessages(),
+        ]);
+    }
+
+    #[Route('/messagerie/check-new/{conversationId}', name: 'app_messagerie_check_new')]
+    public function checkNewMessages(
+        int $conversationId,
+        #[CurrentUser] User $currentUser,
+        ConversationRepository $conversationRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $conversation = $conversationRepository->find($conversationId);
+
+        if (!$conversation) {
+            return $this->json(['success' => false, 'message' => 'Conversation non trouvée']);
+        }
+
+        // Vérifier que l'utilisateur fait partie de la conversation
+        if ($conversation->getUser1()->getId() !== $currentUser->getId() &&
+            $conversation->getUser2()->getId() !== $currentUser->getId()) {
+            return $this->json(['success' => false, 'message' => 'Accès non autorisé']);
+        }
+
+        // Récupérer les nouveaux messages (non lus) pour l'utilisateur courant
+        $newMessages = [];
+        foreach ($conversation->getMessages() as $message) {
+            if ($message->getReceiver()->getId() === $currentUser->getId() && !$message->isIsRead()) {
+                $newMessages[] = $message;
+            }
+        }
+
+        $messagesData = [];
         foreach ($newMessages as $message) {
-            $messages[] = [
+            $messagesData[] = [
                 'id' => $message->getId(),
                 'content' => $message->getContent(),
                 'senderId' => $message->getSender()->getId(),
@@ -131,25 +191,183 @@ class MessagerieController extends AbstractController
             ];
             // Marquer comme lu
             $message->setIsRead(true);
+            $message->setReadAt(new \DateTimeImmutable());
         }
 
-        // $entityManager = $this->getDoctrine()->getManager();
         $entityManager->flush();
 
         return $this->json([
             'success' => true,
-            'messages' => $messages,
-            'count' => count($messages)
+            'messages' => $messagesData,
+            'count' => count($messagesData)
         ]);
     }
 
     #[Route('/messagerie/unread-count', name: 'app_messagerie_unread_count')]
     public function getUnreadCount(
         #[CurrentUser] User $currentUser,
-        MessageRepository $messageRepository
+        ConversationRepository $conversationRepository
     ): JsonResponse {
-        $count = $messageRepository->countUnreadMessages($currentUser);
+        $conversations = $conversationRepository->findConversationsForUser($currentUser);
 
-        return $this->json(['count' => $count]);
+        $totalUnread = 0;
+        foreach ($conversations as $conversation) {
+            $totalUnread += $conversation->getUnreadCountForUser($currentUser);
+        }
+
+        return $this->json(['count' => $totalUnread]);
     }
+
+    #[Route('/messagerie/mark-read/{conversationId}', name: 'app_messagerie_mark_read', methods: ['POST'])]
+    public function markAsRead(
+        int $conversationId,
+        #[CurrentUser] User $currentUser,
+        ConversationRepository $conversationRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $conversation = $conversationRepository->find($conversationId);
+
+        if (!$conversation) {
+            return $this->json(['success' => false, 'message' => 'Conversation non trouvée']);
+        }
+
+        // Vérifier que l'utilisateur fait partie de la conversation
+        if ($conversation->getUser1()->getId() !== $currentUser->getId() &&
+            $conversation->getUser2()->getId() !== $currentUser->getId()) {
+            return $this->json(['success' => false, 'message' => 'Accès non autorisé']);
+        }
+
+        // Marquer tous les messages de la conversation comme lus
+        foreach ($conversation->getMessages() as $message) {
+            if ($message->getReceiver()->getId() === $currentUser->getId() && !$message->isIsRead()) {
+                $message->setIsRead(true);
+                $message->setReadAt(new \DateTimeImmutable());
+            }
+        }
+
+        // Réinitialiser le compteur de messages non lus
+        $conversation->resetUnreadCount($currentUser);
+
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/messagerie/start-conversation/{userId}', name: 'app_messagerie_start_conversation', methods: ['POST'])]
+    public function startConversation(
+        int $userId,
+        #[CurrentUser] User $currentUser,
+        UserRepository $userRepository,
+        ConversationRepository $conversationRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $receiver = $userRepository->find($userId);
+
+        if (!$receiver) {
+            return $this->json(['success' => false, 'message' => 'Utilisateur introuvable']);
+        }
+
+        // Vérifier si une conversation existe déjà
+        $conversation = $conversationRepository->findConversationBetweenUsers($currentUser, $receiver);
+
+        if (!$conversation) {
+            // Créer une nouvelle conversation
+            $conversation = new Conversation();
+            $conversation->setUser1($currentUser);
+            $conversation->setUser2($receiver);
+            $conversation->setCreatedAt(new \DateTimeImmutable());
+            $conversation->setUpdatedAt(new \DateTimeImmutable());
+
+            $entityManager->persist($conversation);
+            $entityManager->flush();
+        }
+
+        return $this->json([
+            'success' => true,
+            'conversationId' => $conversation->getId(),
+            'userId' => $receiver->getId(),
+            'userName' => $receiver->getFullName()
+        ]);
+    }
+
+
+
+#c'est pour vérifier la conversation existante entre deux utilisateurs
+
+    #[Route('/messagerie/get-or-create-conversation/{userId}', name: 'app_messagerie_get_or_create', methods: ['POST'])]
+public function getOrCreateConversation(
+    int $userId,
+    #[CurrentUser] User $currentUser,
+    UserRepository $userRepository,
+    ConversationRepository $conversationRepository,
+    EntityManagerInterface $entityManager
+): JsonResponse {
+    $otherUser = $userRepository->find($userId);
+
+    if (!$otherUser) {
+        return $this->json(['success' => false, 'message' => 'Utilisateur introuvable']);
+    }
+
+    // Chercher une conversation existante
+    $conversation = $conversationRepository->findConversationBetweenUsers($currentUser, $otherUser);
+
+    if (!$conversation) {
+        // Créer une nouvelle conversation
+        $conversation = new Conversation();
+        $conversation->setUser1($currentUser);
+        $conversation->setUser2($otherUser);
+        $conversation->setCreatedAt(new \DateTimeImmutable());
+        $conversation->setUpdatedAt(new \DateTimeImmutable());
+
+        $entityManager->persist($conversation);
+        $entityManager->flush();
+    }
+
+    return $this->json([
+        'success' => true,
+        'conversationId' => $conversation->getId(),
+        'userId' => $otherUser->getId(),
+        'userName' => $otherUser->getFullName()
+    ]);
+}
+
+
+// src/Controller/MessagerieController.php
+#[Route('/messagerie/chat/{userId}', name: 'app_messagerie_chat')]
+public function chat(
+    int $userId,
+    #[CurrentUser] User $currentUser,
+    UserRepository $userRepository,
+    ConversationRepository $conversationRepository,
+    EntityManagerInterface $entityManager
+): Response {
+    $otherUser = $userRepository->find($userId);
+
+    if (!$otherUser) {
+        throw $this->createNotFoundException('Utilisateur non trouvé');
+    }
+
+    // Trouver ou créer la conversation
+    $conversation = $conversationRepository->findOrCreateConversation($currentUser, $otherUser);
+
+    // Marquer les messages comme lus
+    foreach ($conversation->getMessages() as $message) {
+        if ($message->getReceiver()->getId() === $currentUser->getId() && !$message->isIsRead()) {
+            $message->setIsRead(true);
+            $message->setReadAt(new \DateTimeImmutable());
+        }
+    }
+
+    // Réinitialiser le compteur de messages non lus
+    $conversation->resetUnreadCount($currentUser);
+
+    $entityManager->flush();
+
+    return $this->render('messagerie/_conversation.html.twig', [
+        'currentUser' => $currentUser,
+        'conversation' => $conversation,
+        'otherUser' => $conversation->getOtherUser($currentUser),
+        'messages' => $conversation->getMessages(),
+    ]);
+}
 }

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messagerie - HealFit</title>
+        <meta name="csrf-token" content="{{ csrf_token('authenticate') }}">
+
 
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('assets/styles/dashboard.css') }}">
@@ -270,68 +272,58 @@
                             <input type="text" id="searchConversations" placeholder="Rechercher une conversation...">
                         </div>
 
-                        <!-- Liste des conversations -->
-                        <div class="conversations-list" id="conversationsList">
-                            {% if conversations|length > 0 %}
-                                {% for user in conversations %}
-                                    <div class="conversation-item" data-user-id="{{ user.id }}">
-                                        <div class="conversation-avatar">
-                                            {% if user.profileImage %}
-                                                <img src="{{ asset('uploads/profile_images/' ~ user.profileImage) }}"
-                                                    alt="{{ user.fullName }}"
-                                                    onerror="this.src='{{ asset('assets/images/default-avatar.jpg') }}'">
-                                            {% else %}
-                                                <img src="{{ asset('assets/images/default-avatar.jpg') }}"
-                                                    alt="{{ user.fullName }}">
-                                            {% endif %}
-                                        </div>
-                                        <div class="conversation-info">
-                                            <h4>{{ user.fullName }}</h4>
-                                                <p class="last-message">
-                                                    {% set lastSent = user.sentMessages|last %}
-                                                    {% set lastReceived = user.receivedMessages|last %}
+<!-- Liste des conversations -->
+<div class="conversations-list" id="conversationsList">
+    {% if conversations|length > 0 %}
+        {% for conversation in conversations %}
+            {% set otherUser = conversation.otherUser(currentUser) %}
+            {% set lastMessage = conversation.lastMessage %}
 
-                                                    {% if lastSent %}
-                                                        {{ lastSent.content|slice(0, 50) }}{{ lastSent.content|length > 50 ? '...' : '' }}
-                                                    {% elseif lastReceived %}
-                                                        {{ lastReceived.content|slice(0, 50) }}{{ lastReceived.content|length > 50 ? '...' : '' }}
-                                                    {% else %}
-                                                        Commencez une conversation
-                                                    {% endif %}
-                                                </p>
-                                        </div>
-                                        <div class="conversation-meta">
-                                                <span class="message-time">
-                                                    {% set lastSent = user.sentMessages|last %}
-                                                    {% set lastReceived = user.receivedMessages|last %}
-
-                                                    {% if lastSent %}
-                                                        {{ lastSent.createdAt|date('H:i') }}
-                                                    {% elseif lastReceived %}
-                                                        {{ lastReceived.createdAt|date('H:i') }}
-                                                    {% else %}
-                                                        --
-                                                    {% endif %}
-                                                </span>
-                                            {% set unreadCount = 0 %}
-                                            {% for message in user.sentMessages %}
-                                                {% if not message.isRead and message.receiver.id == currentUser.id %}
-                                                    {% set unreadCount = unreadCount + 1 %}
-                                                {% endif %}
-                                            {% endfor %}
-                                            {% if unreadCount > 0 %}
-                                                <span class="unread-badge">{{ unreadCount }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="no-conversations">
-                                    <i class="fas fa-comment-slash"></i>
-                                    <p>Aucune conversation</p>
-                                </div>
-                            {% endif %}
-                        </div>
+            <div class="conversation-item"
+                 data-conversation-id="{{ conversation.id }}"
+                 data-user-id="{{ otherUser.id }}">
+                <div class="conversation-avatar">
+                    {% if otherUser.profileImage %}
+                        <img src="{{ asset('uploads/profile_images/' ~ otherUser.profileImage) }}"
+                            alt="{{ otherUser.fullName }}"
+                            onerror="this.src='{{ asset('assets/images/default-avatar.jpg') }}'">
+                    {% else %}
+                        <img src="{{ asset('assets/images/default-avatar.jpg') }}"
+                            alt="{{ otherUser.fullName }}">
+                    {% endif %}
+                </div>
+                <div class="conversation-info">
+                    <h4>{{ otherUser.fullName }}</h4>
+                    <p class="last-message">
+                        {% if lastMessage %}
+                            {{ lastMessage.content|slice(0, 50) }}{{ lastMessage.content|length > 50 ? '...' : '' }}
+                        {% else %}
+                            Aucun message
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="conversation-meta">
+                    <span class="message-time">
+                        {% if lastMessage %}
+                            {{ lastMessage.createdAt|date('H:i') }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                    {% set unreadCount = conversation.unreadCountForUser(currentUser) %}
+                    {% if unreadCount > 0 %}
+                        <span class="unread-badge">{{ unreadCount }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-conversations">
+            <i class="fas fa-comment-slash"></i>
+            <p>Aucune conversation</p>
+        </div>
+    {% endif %}
+</div>
 
 
                     </div>
@@ -435,23 +427,26 @@
     </div>
 
     <!-- Templates pour les messages -->
-    <template id="messageTemplate">
-        <div class="message" data-message-id="">
-            <div class="message-content">
-                <p class="message-text"></p>
-                <div class="message-meta">
-                    <span class="message-time"></span>
-                    <i class="fas fa-check-double read-status"></i>
-                </div>
+<!-- Templates pour les messages -->
+<template id="messageTemplate">
+    <div class="message" data-message-id="">
+        <div class="message-content">
+            <p class="message-text"></p>
+            <div class="message-meta">
+                <span class="message-time"></span>
+                <!-- Ajoutez ces deux icônes avec les bonnes classes -->
+                <i class="fas fa-check check-icon" style="display: none;"></i>
+                <i class="fas fa-check-double double-check-icon" style="display: none;"></i>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 
-    <template id="dateSeparatorTemplate">
-        <div class="date-separator">
-            <span></span>
-        </div>
-    </template>
+<template id="dateSeparatorTemplate">
+    <div class="date-separator">
+        <span></span>
+    </div>
+</template>
 
     <!-- JavaScript -->
     <script>

@@ -7,6 +7,7 @@ use App\Repository\MessageRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\Table(name: 'messages')]
@@ -47,6 +48,26 @@ class Message
     public function setCreatedAtValue(): void
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+
+    // les RELATIONs conversation
+    #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'messages')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Conversation $conversation = null;
+
+
+
+    // AJOUTER CES GETTERS/SETTERS
+    public function getConversation(): ?Conversation
+    {
+        return $this->conversation;
+    }
+
+    public function setConversation(?Conversation $conversation): static
+    {
+        $this->conversation = $conversation;
+        return $this;
     }
 
     // Getters et Setters

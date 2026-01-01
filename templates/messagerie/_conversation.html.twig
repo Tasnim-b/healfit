@@ -1,0 +1,103 @@
+{# templates/messagerie/_conversation.html.twig #}
+<div class="conversation-active" id="conversationActive">
+    <!-- En-tête de la conversation -->
+    <div class="conversation-header">
+        <div class="conversation-user-info">
+            <div class="user-avatar-small">
+                {% if otherUser.profileImage %}
+                    <img id="activeConversationAvatar"
+                         src="{{ asset('uploads/profile_images/' ~ otherUser.profileImage) }}"
+                         alt="{{ otherUser.fullName }}"
+                         onerror="this.src='{{ asset('assets/images/default-avatar.jpg') }}'">
+                {% else %}
+                    <img id="activeConversationAvatar"
+                         src="{{ asset('assets/images/default-avatar.jpg') }}"
+                         alt="{{ otherUser.fullName }}">
+                {% endif %}
+            </div>
+            <div class="user-details">
+                <h3 id="activeConversationName">{{ otherUser.fullName }}</h3>
+                <p class="user-status" id="activeConversationStatus">
+                    <i class="fas fa-circle"></i> <span>En ligne</span>
+                </p>
+            </div>
+        </div>
+        <div class="conversation-actions">
+            <button class="action-btn" title="Appeler">
+                <i class="fas fa-phone"></i>
+            </button>
+            <button class="action-btn" title="Informations">
+                <i class="fas fa-info-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-container" id="messagesContainer">
+        {% for message in messages %}
+            <div class="message {% if message.sender.id == currentUser.id %}sent{% else %}received{% endif %}"
+                 data-message-id="{{ message.id }}">
+                <div class="message-content">
+                    <p class="message-text">{{ message.content }}</p>
+                    <div class="message-meta">
+                        <span class="message-time">{{ message.createdAt|date('H:i') }}</span>
+                        {% if message.sender.id == currentUser.id %}
+                            <i class="fas fa-check-double {% if message.isRead %}read{% endif %}"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Message par défaut si aucune conversation -->
+            <div class="no-messages">
+                <i class="fas fa-comment-alt"></i>
+                <p>Commencez la conversation avec {{ otherUser.fullName }}</p>
+                <small>Envoyez votre premier message</small>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- FORMULAIRE D'ENVOI - IMPORTANT ! -->
+    <div class="message-input-container">
+        <form id="sendMessageForm">
+            <div class="input-group">
+                <button type="button" class="input-action-btn" id="attachFileBtn">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <textarea
+                    id="messageInput"
+                    placeholder="Tapez votre message..."
+                    rows="1"
+                    autofocus
+                ></textarea>
+                <button type="submit" class="send-btn" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Mettre à jour l'interface avec les informations de la conversation
+    document.getElementById('activeConversationName').textContent = "{{ otherUser.fullName|e('js') }}";
+
+    // Mettre à jour l'avatar si nécessaire
+    const avatar = document.getElementById('activeConversationAvatar');
+    if (!avatar.src.includes('{{ otherUser.profileImage ? otherUser.profileImage : 'default-avatar.jpg' }}')) {
+        avatar.src = "{{ otherUser.profileImage ? asset('uploads/profile_images/' ~ otherUser.profileImage) : asset('assets/images/default-avatar.jpg') }}";
+    }
+
+    // Scroller vers le bas
+    const container = document.getElementById('messagesContainer');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // Initialiser les événements pour le nouveau formulaire
+    if (window.messagerie) {
+        setTimeout(() => {
+            window.messagerie.bindConversationEvents();
+        }, 100);
+    }
+</script>

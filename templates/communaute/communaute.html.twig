@@ -38,8 +38,10 @@
                 </div>
                 <!-- Messagerie -->
                 <div class="messaging-icon">
+                  <a href="{{ path('app_messagerie') }}">
                     <i class="fas fa-envelope"></i>
                     <span class="message-badge">5</span>
+                  </a>
                 </div>
 
                 <!-- Profil Utilisateur -->
@@ -283,7 +285,7 @@
                                 </div>
                                 <div class="member-actions">
                                     <button class="contact-btn" data-member-id="{{ member.id }}">
-                                        <i class="fas fa-comment-dots"></i> Contacter
+                                            <i class="fas fa-comment-dots"></i> Contacter
                                     </button>
                                 </div>
                             </div>

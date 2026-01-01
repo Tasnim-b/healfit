@@ -50,31 +50,33 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             /**
      * Récupère tous les utilisateurs sauf celui spécifié
      */
-    public function findAllExcept(User $excludedUser): array
-    {
-        return $this->createQueryBuilder('u')
-            ->where('u.id != :excludedId')
-            ->setParameter('excludedId', $excludedUser->getId())
-            ->orderBy('u.fullName', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
+public function findAllExcept(int $userId): array
+{
+    return $this->createQueryBuilder('u')
+        ->where('u.id != :userId')
+        ->setParameter('userId', $userId)
+        ->orderBy('u.fullName', 'ASC')
+        ->getQuery()
+        ->getResult();
+}
 
 
         /**
      * Récupère les utilisateurs avec qui j'ai une conversation
      */
-    public function findUsersWithConversations(User $currentUser): array
-    {
-        return $this->createQueryBuilder('u')
-            ->leftJoin('u.sentMessages', 'sent')
-            ->leftJoin('u.receivedMessages', 'received')
-            ->where('sent.sender = :user OR received.receiver = :user')
-            ->andWhere('u.id != :user')
-            ->setParameter('user', $currentUser)
-            ->groupBy('u.id')
-            ->orderBy('MAX(sent.createdAt)', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
+public function findUsersWithConversations(User $currentUser): array
+{
+    // Requête alternative 1: Avec COALESCE
+    return $this->createQueryBuilder('u')
+        ->leftJoin('u.sentMessages', 'sent')
+        ->leftJoin('u.receivedMessages', 'received')
+        ->where('sent.receiver = :user OR received.sender = :user')
+        ->andWhere('u.id != :user')
+        ->setParameter('user', $currentUser)
+        ->groupBy('u.id')
+        ->orderBy('MAX(sent.createdAt)', 'DESC')
+        ->addOrderBy('MAX(received.createdAt)', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
 }
