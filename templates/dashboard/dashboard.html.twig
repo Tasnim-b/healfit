@@ -33,17 +33,21 @@
 
             <div class="navbar-right">
                 <!-- Notification -->
+                {% set notifCount = getAllNotificationsCount(app.user) %}
                 <div class="notification-icon">
+                    <a href="{{ path('app_notifications') }}">
                     <i class="fas fa-bell"></i>
-                    <span class="notification-badge">3</span>
+                    <span class="notification-badge" id="notificationBadge" style="{{ notifCount > 0 ? '' : 'display: none;' }}">{{ notifCount > 0 ? notifCount : 0 }}</span>
+                    </a>
                 </div>
 
                 <!-- Messagerie -->
+                {% set unreadMessages = getUnreadMessagesCount(app.user) %}
                 <div class="messaging-icon">
                     <a href="{{ path('app_messagerie') }}">
                         <i class="fas fa-envelope"></i>
 
-                            <span class="message-badge">5</span>
+                            <span class="message-badge" id="globalUnreadCount" style="{{ unreadMessages > 0 ? '' : 'display: none;' }}">{{ unreadMessages > 0 ? unreadMessages : 0 }}</span>
 
                     </a>
                 </div>
@@ -448,38 +452,25 @@
                 <div class="community-card">
                     <div class="section-header">
                         <h3><i class="fas fa-users"></i> Communauté active</h3>
-                        <a href="#" class="view-all">Voir tous <i class="fas fa-arrow-right"></i></a>
+                        <a href="{{path('app_communaute')}}" class="view-all">Voir tous <i class="fas fa-arrow-right"></i></a>
                     </div>
 
                     <div class="community-members">
-                        <div class="member">
-                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Membre">
-                            <div class="member-info">
-                                <h5>Marie L.</h5>
-                                <p>15 entraînements cette semaine</p>
-                            </div>
-                            <button class="btn-follow">Suivre</button>
-                        </div>
-
-                        <div class="member">
-                            <img src="https://randomuser.me/api/portraits/men/54.jpg" alt="Membre">
-                            <div class="member-info">
-                                <h5>Pierre D.</h5>
-                                <p>Perdu 5kg ce mois-ci</p>
-                            </div>
-                            <button class="btn-follow">Suivre</button>
-                        </div>
-
-                        <div class="member">
-                            <img src="https://randomuser.me/api/portraits/women/67.jpg" alt="Membre">
-                            <div class="member-info">
-                                <h5>Sophie T.</h5>
-                                <p>Partage 3 nouvelles recettes</p>
-                            </div>
-                            <button class="btn-following">
-                                <i class="fas fa-check"></i> Suivi
-                            </button>
-                        </div>
+                        {% set activeUsers = getActiveCommunityUsers(app.user, 5) %}
+                        {% if activeUsers is empty %}
+                            <div class="no-active-members">Aucun membre actif pour le moment.</div>
+                        {% else %}
+                            {% for member in activeUsers %}
+                                <div class="member">
+                                    <img src="{{ member.profileImage ? asset('uploads/profile_images/' ~ member.profileImage) : 'https://randomuser.me/api/portraits/lego/1.jpg' }}" alt="Membre">
+                                    <div class="member-info">
+                                        <h5>{{ member.fullName }}</h5>
+                                        <p>Dernière activité : {{ member.lastActivity ? member.lastActivity|date('H:i') : '' }}</p>
+                                    </div>
+                                    <button class="btn-follow">Suivre</button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
 
                     <div class="community-challenge">

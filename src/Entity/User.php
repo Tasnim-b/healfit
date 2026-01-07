@@ -52,13 +52,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $lastActivity = null;
+
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
+
+//relations notifications
+#[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'user')]
+private Collection $notifications;
 
 
 //relation avec les messages
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'sender')]
     private Collection $sentMessages;
+
+
+    public function getNotifications(): Collection
+{
+    return $this->notifications;
+}
+
+public function addNotification(Notification $notification): static
+{
+    if (!$this->notifications->contains($notification)) {
+        $this->notifications->add($notification);
+        $notification->setUser($this);
+    }
+    return $this;
+}
+
+public function removeNotification(Notification $notification): static
+{
+    if ($this->notifications->removeElement($notification)) {
+        if ($notification->getUser() === $this) {
+            $notification->setUser(null);
+        }
+    }
+    return $this;
+}
+
+public function getUnreadNotifications(): array
+{
+    return $this->notifications->filter(function(Notification $notification) {
+        return !$notification->isIsRead();
+    })->toArray();
+}
+
+public function getUnreadNotificationsCount(): int
+{
+    return count($this->getUnreadNotifications());
+}
 
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'receiver')]
     private Collection $receivedMessages;
@@ -70,6 +114,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = ['ROLE_USER'];
         $this->sentMessages = new ArrayCollection();
         $this->receivedMessages = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
     }
 
     // Getters et Setters pour les nouveaux champs
@@ -182,6 +227,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getLastActivity(): ?\DateTimeImmutable
+    {
+        return $this->lastActivity;
+    }
+
+    public function setLastActivity(?\DateTimeImmutable $lastActivity): static
+    {
+        $this->lastActivity = $lastActivity;
         return $this;
     }
 

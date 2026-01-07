@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Core\User\UserInterface;
+use App\Service\NotificationService;
 
 class MessagerieController extends AbstractController
 {
@@ -53,11 +54,12 @@ class MessagerieController extends AbstractController
         #[CurrentUser] User $currentUser,
         UserRepository $userRepository,
         ConversationRepository $conversationRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        NotificationService $notificationService
     ): JsonResponse {
             // Log pour debugging
-    error_log("Tentative d'envoi de message à l'utilisateur: " . $userId);
-    error_log("Utilisateur courant: " . $currentUser->getId());
+    // error_log("Tentative d'envoi de message à l'utilisateur: " . $userId);
+    // error_log("Utilisateur courant: " . $currentUser->getId());
         $content = $request->request->get('content');
 
         if (empty(trim($content))) {
@@ -99,6 +101,8 @@ class MessagerieController extends AbstractController
 
         $entityManager->persist($message);
         $entityManager->flush();
+         // ENVOYER LA NOTIFICATION
+        $notificationService->notifyNewMessage($message);
 
         return $this->json([
             'success' => true,
@@ -111,6 +115,7 @@ class MessagerieController extends AbstractController
                 'date' => $message->getFormattedDate(),
             ]
         ]);
+
     }
 
     #[Route('/messagerie/conversation/{conversationId}', name: 'app_messagerie_conversation')]

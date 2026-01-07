@@ -1,3 +1,5 @@
+
+
 class Messagerie {
     constructor() {
         this.currentUser = window.currentUser;
@@ -899,6 +901,130 @@ bindConversationEvents() {
     const attachBtn = document.getElementById('attachFileBtn');
     if (attachBtn) {
         attachBtn.addEventListener('click', () => this.attachFile());
+    }
+}
+// Dans la classe Messagerie de messagerie.js
+bindNotificationEvents() {
+    const notificationIcon = document.getElementById('notificationIcon');
+    if (notificationIcon) {
+        notificationIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleNotificationsDropdown();
+        });
+    }
+
+    // Fermer le dropdown en cliquant à l'extérieur
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('notificationsDropdown');
+        if (dropdown && dropdown.style.display === 'block') {
+            if (!dropdown.contains(e.target) && !e.target.closest('#notificationIcon')) {
+                dropdown.style.display = 'none';
+            }
+        }
+    });
+
+    // Marquer tout comme lu
+    document.getElementById('markAllReadBtn')?.addEventListener('click', async () => {
+        await this.notificationManager.markAllAsRead();
+        await this.loadNotificationsDropdown();
+    });
+
+    // Voir toutes les notifications
+    document.getElementById('viewAllNotifications')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/notifications';
+    });
+}
+
+toggleNotificationsDropdown() {
+    const dropdown = document.getElementById('notificationsDropdown');
+    if (!dropdown) return;
+
+    if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+    } else {
+        dropdown.style.display = 'block';
+        this.loadNotificationsDropdown();
+    }
+}
+
+async loadNotificationsDropdown() {
+    const list = document.getElementById('notificationsList');
+    if (!list) return;
+
+    try {
+        list.innerHTML = '<div class="loading-notifications"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+
+        const notifications = await this.notificationManager.fetchNotifications();
+
+        if (notifications.length === 0) {
+            list.innerHTML = `
+                <div class="no-notifications">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>Aucune notification</p>
+                </div>
+            `;
+            return;
+        }
+
+        const template = document.getElementById('notificationTemplate');
+        list.innerHTML = '';
+
+        notifications.forEach(notification => {
+            const clone = template.content.cloneNode(true);
+            const item = clone.querySelector('.notification-item');
+
+            item.dataset.id = notification.id;
+            if (!notification.isRead) {
+                item.classList.add('unread');
+            }
+
+            // Icône
+            const icon = item.querySelector('.notification-icon i');
+            switch (notification.type) {
+                case 'message':
+                    icon.className = 'fas fa-comment';
+                    break;
+                case 'water_reminder':
+                    icon.className = 'fas fa-tint';
+                    break;
+                default:
+                    icon.className = 'fas fa-bell';
+            }
+
+            // Titre
+            item.querySelector('.notification-title').textContent = notification.title;
+
+            // Message
+            item.querySelector('.notification-message').textContent = notification.message;
+
+            // Temps
+            item.querySelector('.notification-time').textContent = notification.createdAt;
+
+            // Lien
+            const link = item.querySelector('.notification-link');
+            if (notification.route) {
+                link.href = this.generateRoute(notification.route, notification.routeParams);
+            }
+
+            // Bouton marquer comme lu
+            const markReadBtn = item.querySelector('.mark-read-btn');
+            markReadBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                await this.notificationManager.markAsRead(notification.id);
+                item.remove();
+
+                // Mettre à jour le badge
+                this.notificationManager.checkNewNotifications();
+            });
+
+            list.appendChild(item);
+        });
+    } catch (error) {
+        console.error('Erreur:', error);
+        list.innerHTML = '<div class="no-notifications"><p>Erreur de chargement</p></div>';
     }
 }
 

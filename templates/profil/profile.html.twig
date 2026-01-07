@@ -32,16 +32,20 @@
 
             <div class="navbar-right">
                 <!-- Notification -->
+                {% set notifCount = getAllNotificationsCount(app.user) %}
                 <div class="notification-icon">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge">3</span>
+                    <a href="{{ path('app_notifications') }}">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge" style="{{ notifCount > 0 ? '' : 'display: none;' }}">{{ notifCount > 0 ? notifCount : 0 }}</span>
+                    </a>
                 </div>
 
                 <!-- Messagerie -->
+                {% set unreadMessages = getUnreadMessagesCount(app.user) %}
                 <div class="messaging-icon">
                      <a href="{{ path('app_messagerie') }}">
                     <i class="fas fa-envelope"></i>
-                    <span class="message-badge">5</span>
+                    <span class="message-badge" id="globalUnreadCount" style="{{ unreadMessages > 0 ? '' : 'display: none;' }}">{{ unreadMessages > 0 ? unreadMessages : 0 }}</span>
                     </a>
                 </div>
 

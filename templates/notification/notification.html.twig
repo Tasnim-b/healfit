@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - HealFit</title>
+    <meta name="csrf-token" content="{{ csrf_token('authenticate') }}">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/styles/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/styles/messagerie.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/styles/notification.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Navbar -->
+        <nav class="dashboard-navbar">
+            <div class="navbar-left">
+                <a href="{{ path('app_home') }}" class="dashboard-logo">
+                    <img src="{{ asset('assets/images/healFit-logo.png') }}" alt="HealFit Logo" class="logo-img">
+                    <span class="logo-text">
+                        <span class="logo-part1">HEAL</span>
+                        <span class="logo-part2">FIT</span>
+                    </span>
+                </a>
+            </div>
+
+            <div class="navbar-center">
+                <h1 class="dashboard-title">Notifications</h1>
+            </div>
+
+            <div class="navbar-right">
+                <!-- Notification -->
+                {% set notifCount = getAllNotificationsCount(app.user) %}
+                <div class="notification-icon" id="notificationIcon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="{{ notifCount > 0 ? '' : 'display: none;' }}">{{ notifCount > 0 ? notifCount : 0 }}</span>
+                </div>
+
+                <!-- Messagerie -->
+                {% set unreadMessages = getUnreadMessagesCount(app.user) %}
+                <a href="{{ path('app_messagerie') }}" class="messaging-icon">
+                    <i class="fas fa-envelope"></i>
+                    <span class="message-badge" id="messageBadge" style="{{ unreadMessages > 0 ? '' : 'display: none;' }}">{{ unreadMessages > 0 ? unreadMessages : 0 }}</span>
+                </a>
+
+                <!-- Profil Utilisateur -->
+                <div class="user-profile-dropdown">
+                    <div class="user-avatar" id="userMenuTrigger">
+                        {% if app.user.profileImage %}
+                            <img src="{{ asset('uploads/profile_images/' ~ app.user.profileImage) }}"
+                                alt="Photo de profil"
+                                class="profile-img"
+                                onerror="this.src='{{ asset('assets/images/default-avatar.jpg') }}'">
+                        {% else %}
+                            <img src="{{ asset('assets/images/default-avatar.jpg') }}"
+                                alt="Photo de profil"
+                                class="profile-img">
+                        {% endif %}
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+
+                    <div class="dropdown-menu" id="userMenu">
+                        <!-- Menu utilisateur intégré -->
+                        <div class="user-info">
+                            {% if app.user.profileImage %}
+                                <img src="{{ asset('uploads/profile_images/' ~ app.user.profileImage) }}"
+                                    alt="Photo de profil"
+                                    class="menu-profile-img"
+                                    onerror="this.src='{{ asset('assets/images/default-avatar.jpg') }}'">
+                            {% else %}
+                                <img src="{{ asset('assets/images/default-avatar.jpg') }}"
+                                    alt="Photo de profil"
+                                    class="menu-profile-img">
+                            {% endif %}
+                            <div class="user-details">
+                                <h4>{{ app.user.fullName }}</h4>
+                                <p>Membre {% if 'ROLE_PREMIUM' in app.user.roles %}Premium{% else %}Standard{% endif %}</p>
+                            </div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <a href="{{ path('app_profil') }}" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Mon Profil</span>
+                        </a>
+
+                        <a href="{{ path('app_dashboard') }}" class="dropdown-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Tableau de bord</span>
+                        </a>
+
+                        <a href="{{ path('app_communaute') }}" class="dropdown-item">
+                            <i class="fas fa-users"></i>
+                            <span>Communauté</span>
+                        </a>
+
+                        <a href="{{ path('app_messagerie') }}" class="dropdown-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>Messagerie</span>
+                            <span class="menu-badge" id="menuMessageBadge" style="display: none;"></span>
+                        </a>
+
+                        <a href="{{ path('app_notifications') }}" class="dropdown-item active">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                            <span class="menu-badge" id="menuNotificationBadge" style="display: none;"></span>
+                        </a>
+
+                        <a href="#" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Mes Statistiques</span>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- FORMULAIRE DE DÉCONNEXION -->
+                        <form action="{{ path('app_logout') }}" method="POST" class="logout-form">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                            <button type="submit" class="dropdown-item logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Déconnexion</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar intégrée -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-bars"></i> Menu</h3>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="{{ path('app_dashboard') }}" class="menu-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+
+                <div class="menu-section">
+                    <h4>Santé & Fitness</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-utensils"></i>
+                        <span>Régime alimentaire</span>
+                        <span class="badge">Nouveau</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-dumbbell"></i>
+                        <span>Workout personnalisé</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Planning d'entraînement</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Salle de sport proche</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Expertise</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-user-md"></i>
+                        <span>Nutritionniste expert</span>
+                    </a>
+
+                    <a href="{{ path('app_communaute') }}" class="menu-item">
+                        <i class="fas fa-users"></i>
+                        <span>Communauté</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-building"></i>
+                        <span>Partenaires fitness</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Communication</h4>
+
+                    <a href="{{ path('app_messagerie') }}" class="menu-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>Messagerie</span>
+                    </a>
+
+                    <a href="{{ path('app_notifications') }}" class="menu-item active">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                        <span class="badge">{{ notifications|length }}</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Progression</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Mes progrès</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-trophy"></i>
+                        <span>Mes objectifs</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-award"></i>
+                        <span>Mes badges</span>
+                        <span class="badge">8</span>
+                    </a>
+                </div>
+
+                <div class="menu-section">
+                    <h4>Ressources</h4>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-book"></i>
+                        <span>Guide santé</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-video"></i>
+                        <span>Vidéos d'exercices</span>
+                    </a>
+
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Rapports mensuels</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-progress">
+                    <div class="progress-info">
+                        <span>Progression mensuelle</span>
+                        <span>65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                </div>
+
+                <button class="premium-btn">
+                    <i class="fas fa-crown"></i>
+                    Passer à Premium
+                </button>
+            </div>
+        </aside>
+
+        <!-- Contenu principal - Notifications -->
+        <main class="dashboard-content">
+            <div class="notifications-container">
+                <div class="notifications-header">
+                    <h2><i class="fas fa-bell"></i> Mes Notifications</h2>
+                    <div class="notifications-actions">
+                        <button class="btn-mark-all-read" id="btnMarkAllRead">
+                            <i class="fas fa-check-double"></i> Tout marquer comme lu
+                        </button>
+                        <button class="btn-refresh" id="btnRefresh">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                    </div>
+                </div>
+
+                <div class="notifications-filters">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">Toutes</button>
+                        <button class="filter-btn" data-filter="unread">Non lues</button>
+                        <button class="filter-btn" data-filter="message">
+                            <i class="fas fa-comment"></i> Messages
+                        </button>
+                        <button class="filter-btn" data-filter="water_reminder">
+                            <i class="fas fa-tint"></i> Rappels d'eau
+                        </button>
+                    </div>
+
+                    <div class="search-notifications">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchNotifications" placeholder="Rechercher une notification...">
+                    </div>
+                </div>
+
+                <div class="notifications-list-container">
+                    <div class="notifications-timeline" id="notificationsTimeline">
+                        {% if notifications|length > 0 %}
+                            {% for notification in notifications %}
+                                <div class="notification-card {% if not notification.isRead %}unread{% endif %}"
+                                     data-id="{{ notification.id }}"
+                                     data-type="{{ notification.type }}">
+                                    <div class="notification-icon">
+                                        {% if notification.type == 'message' %}
+                                            <i class="fas fa-comment"></i>
+                                        {% elseif notification.type == 'water_reminder' %}
+                                            <i class="fas fa-tint"></i>
+                                        {% else %}
+                                            <i class="fas fa-bell"></i>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="notification-content">
+                                        <div class="notification-header">
+                                            <h4 class="notification-title">{{ notification.title }}</h4>
+                                            <span class="notification-time">{{ notification.createdAt|date('d/m/Y H:i') }}</span>
+                                        </div>
+
+                                        <p class="notification-message">{{ notification.message }}</p>
+
+                                        {% if notification.route %}
+                                            <div class="notification-actions">
+                                              <a href="{{ path(notification.route, notification.routeParams) }}"
+                                                   class="btn-notification-action">
+                                                    <i class="fas fa-arrow-right"></i> Voir
+                                                </a>
+                                                <button class="btn-mark-read" data-id="{{ notification.id }}">
+                                                    <i class="fas fa-check"></i> Marquer comme lu
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if not notification.isRead %}
+                                        <span class="unread-dot"></span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-notifications">
+                                <i class="fas fa-bell-slash"></i>
+                                <h3>Aucune notification</h3>
+                                <p>Vous n'avez aucune notification pour le moment</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if notifications|length > 0 %}
+                    <div class="notifications-pagination">
+                        <button class="btn-prev" id="btnPrev">
+                            <i class="fas fa-chevron-left"></i> Précédent
+                        </button>
+                        <span class="pagination-info">Page 1 sur 1</span>
+                        <button class="btn-next" id="btnNext">
+                            Suivant <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Dropdown de notifications (caché) -->
+    <div class="notifications-dropdown" id="notificationsDropdown" style="display: none;">
+        <div class="dropdown-header">
+            <h4>Notifications</h4>
+            <button class="mark-all-read-btn" id="markAllReadBtn">Tout marquer comme lu</button>
+        </div>
+
+        <div class="notifications-list" id="notificationsList">
+            <div class="loading-notifications">
+                <i class="fas fa-spinner fa-spin"></i> Chargement des notifications...
+            </div>
+        </div>
+
+        <div class="dropdown-footer">
+            <a href="#" id="viewAllNotifications">Voir toutes les notifications</a>
+        </div>
+    </div>
+
+    <!-- Templates -->
+    <template id="notificationCardTemplate">
+        <div class="notification-card unread" data-id="" data-type="">
+            <div class="notification-icon">
+                <i class="fas"></i>
+            </div>
+
+            <div class="notification-content">
+                <div class="notification-header">
+                    <h4 class="notification-title"></h4>
+                    <span class="notification-time"></span>
+                </div>
+
+                <p class="notification-message"></p>
+
+                <div class="notification-actions">
+                    <a href="#" class="btn-notification-action">
+                        <i class="fas fa-arrow-right"></i> Voir
+                    </a>
+                    <button class="btn-mark-read" data-id="">
+                        <i class="fas fa-check"></i> Marquer comme lu
+                    </button>
+                </div>
+            </div>
+
+            <span class="unread-dot"></span>
+        </div>
+    </template>
+
+    <template id="notificationTemplate">
+        <div class="notification-item" data-id="">
+            <a class="notification-link" href="#">
+                <div class="notification-icon">
+                    <i class="fas"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title"></div>
+                    <div class="notification-message"></div>
+                    <div class="notification-time"></div>
+                </div>
+            </a>
+            <button class="mark-read-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </template>
+
+    <template id="noNotificationsTemplate">
+        <div class="no-notifications">
+            <i class="fas fa-bell-slash"></i>
+            <p>Aucune notification</p>
+        </div>
+    </template>
+
+    <!-- JavaScript -->
+    <script>
+        window.currentUser = {
+            id: {{ app.user.id }},
+            name: "{{ app.user.fullName|e('js') }}",
+            avatar: "{{ app.user.profileImage ? asset('uploads/profile_images/' ~ app.user.profileImage) : asset('assets/images/default-avatar.jpg') }}"
+        };
+    </script>
+
+    <script src="{{ asset('js/messagerie.js') }}"></script>
+    <script src="{{ asset('js/notification.js') }}"></script>
+</body>
+</html>

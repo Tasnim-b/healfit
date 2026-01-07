@@ -37,17 +37,17 @@
 
     <div class="navbar-right">
         <!-- Notification -->
-        <div class="notification-icon">
+        {% set notifCount = getAllNotificationsCount(app.user) %}
+        <div class="notification-icon" id="notificationIcon">
             <i class="fas fa-bell"></i>
-            <span class="notification-badge">3</span>
+            <span class="notification-badge" id="notificationBadge" style="{{ notifCount > 0 ? '' : 'display: none;' }}">{{ notifCount > 0 ? notifCount : 0 }}</span>
         </div>
 
         <!-- Messagerie active -->
+        {% set unreadMessages = getUnreadMessagesCount(app.user) %}
         <div class="messaging-icon active">
             <i class="fas fa-envelope"></i>
-            <span class="message-badge" id="globalUnreadCount">
-                {% if unreadCount > 0 %}{{ unreadCount }}{% endif %}
-            </span>
+            <span class="message-badge" id="globalUnreadCount" style="{{ unreadMessages > 0 ? '' : 'display: none;' }}">{{ unreadMessages > 0 ? unreadMessages : 0 }}</span>
         </div>
 
         <!-- Profil Utilisateur -->
@@ -447,6 +447,34 @@
         <span></span>
     </div>
 </template>
+
+
+<!-- Templates pour les notifications -->
+<template id="notificationTemplate">
+    <div class="notification-item" data-id="">
+        <a class="notification-link" href="#">
+            <div class="notification-icon">
+                <i class="fas"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title"></div>
+                <div class="notification-message"></div>
+                <div class="notification-time"></div>
+            </div>
+        </a>
+        <button class="mark-read-btn">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</template>
+
+<!-- Toast de notification -->
+<div class="notification-toast" id="notificationToast" style="display: none;">
+    <div class="toast-content">
+        <i class="fas fa-bell"></i>
+        <span id="toastMessage">Nouvelle notification</span>
+    </div>
+</div>
 
     <!-- JavaScript -->
     <script>
